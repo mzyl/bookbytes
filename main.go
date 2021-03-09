@@ -14,6 +14,7 @@ func main() {
   book := BookBuilder(filename)
   BookPrinter(book)
   fmt.Println()
+  fmt.Printf("%v\n", GetParagraph(book.fullText))
 }
 
 // runs recursively over folder 
@@ -58,7 +59,7 @@ func BookBuilder(filename string) Book {
   title := GetTitle(scanner)
   author := GetAuthor(scanner)
   date := GetDate(scanner)
-  fullText := GetText(scanner)
+  fullText := Strip(GetText(scanner))
   return Book{filename, title, author, date, fullText}
 
 }
@@ -68,7 +69,7 @@ func BookPrinter(book Book) {
   fmt.Println("Title: \t\t", book.title)
   fmt.Println("Author: \t", book.author)
   fmt.Println("Release Date: \t", book.date)
-  fmt.Println("Full Text: \n", book.fullText)
+  //fmt.Println("Full Text: \n", book.fullText)
 }
 
 // retrieve book title from file
@@ -141,58 +142,60 @@ func Between(line string, a string, b string) (date string) {
   return
 }
 
+// TODO:
+// this needs to section by newlines or something
+// currently splits line by line which does not work for returning paragraphs later
+// return full text of file
 func GetText(scanner *bufio.Scanner) (text []string) {
   for scanner.Scan() {
-    if strings.Contains(scanner.Text(), "***") {
-      text = append(text, scanner.Text())
-      break
-    }
+    text = append(text, scanner.Text())
   }
   return
 }
 
-// these functions are a work in progress
-// todo:
-// strip licensing info, index, etc. from file --separate function?
-func Strip(scanner *bufio.Scanner) {
-  // start and end are denoted by text encased in "***"
-  // should be able to search from top for such string and delete from there up
-  for scanner.Scan() {
-    if strings.Contains(scanner.Text(), "***") {
-      // remove here up
-      fmt.Println(scanner.Text())
+// strip licensing info, index, etc. from file
+func Strip(text []string) (stripped []string) {
+  start := 0
+  end := 0
+
+  for i, line := range text {
+    if strings.Contains(line, "***") {
+      start = i
       break
     }
   }
-  if err := scanner.Err(); err != nil {
-    log.Fatal(err)
+
+  stripped = text[start+1:]
+
+  // wish I could go from the bottom of the file easily, but it doesn't look like I can
+  // Go does this quickly, though
+  for i, line := range stripped {
+    if strings.Contains(line, "***") {
+      end = i
+      break
+    }
   }
-  // should be able to search from bottom up for such string and delete from there down
+
+  stripped = stripped[:end]
+  return
 }
-// split the remaining text into a splice of sections --separate function?
+
+// TODO:
 // randomly select a index from the array
 // determine if that index contains a "paragraph" i.e. by length or something
 // return the text from that paragraph and its index in the array
 // index is important for finding chapter later
+// probably need a paragraph struct to hold text and location
 
-func GetParagraph(filename string) (paragraph string) {
-  // probably doesn't need to open the file
-  // will probably be passed the text by a different function
-  file, err := os.Open(filename)
-  if err != nil {
-    log.Fatal(err)
+func GetParagraph(text []string) (paragraph []string) {
+  var graph []string
+  for i, line := range text {
+    if i < 20 {
+      graph = append(graph, line)
+    }
+    paragraph = graph[:]
   }
-  defer file.Close()
-
-  scanner := bufio.NewScanner(file)
-  for scanner.Scan() {
-    // logic goes here
-    fmt.Println(scanner.Text())
-  }
-  if err := scanner.Err(); err != nil {
-    log.Fatal(err)
-  }
-  return ""
+  return
 }
 
 // outputs a line-by-line copy of the text in the book file
