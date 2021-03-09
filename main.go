@@ -56,9 +56,12 @@ func BookBuilder(filename string) Book {
   defer file.Close()
 
   scanner := bufio.NewScanner(file)
-  title := GetTitle(scanner)
-  author := GetAuthor(scanner)
-  date := GetDate(scanner)
+  //title := GetTitle(scanner)
+  //author := GetAuthor(scanner)
+  //date := GetDate(scanner)
+  title := ""
+  author := ""
+  date := ""
   fullText := Strip(GetText(scanner))
   return Book{filename, title, author, date, fullText}
 
@@ -69,7 +72,7 @@ func BookPrinter(book Book) {
   fmt.Println("Title: \t\t", book.title)
   fmt.Println("Author: \t", book.author)
   fmt.Println("Release Date: \t", book.date)
-  //fmt.Println("Full Text: \n", book.fullText)
+  fmt.Println("Full Text: \n", book.fullText)
 }
 
 // retrieve book title from file
@@ -147,6 +150,19 @@ func Between(line string, a string, b string) (date string) {
 // currently splits line by line which does not work for returning paragraphs later
 // return full text of file
 func GetText(scanner *bufio.Scanner) (text []string) {
+  onNewLine := func(data []byte, atEOF bool) (advance int, token []byte, err error) {
+    if atEOF && len(data) == 0 {
+      return 0, nil, nil
+    }
+    if i := strings.Index(string(data), "\n"); i >= 0 {
+      return i + 1, data[:i], nil
+    }
+    if !atEOF {
+      return 0, nil, nil
+    }
+    return 0, data, bufio.ErrFinalToken
+  }
+  scanner.Split(onNewLine)
   for scanner.Scan() {
     text = append(text, scanner.Text())
   }
@@ -190,7 +206,7 @@ func Strip(text []string) (stripped []string) {
 func GetParagraph(text []string) (paragraph []string) {
   var graph []string
   for i, line := range text {
-    if i < 20 {
+    if i < 50 {
       graph = append(graph, line)
     }
     paragraph = graph[:]
