@@ -5,6 +5,7 @@ import (
   "fmt"
   "log"
   "bufio"
+  "regexp"
   "strings"
 )
 
@@ -14,7 +15,7 @@ func main() {
   book := BookBuilder(filename)
   BookPrinter(book)
   fmt.Println()
-  fmt.Printf("%v\n", GetParagraph(book.fullText))
+  //fmt.Printf("%v\n", GetParagraph(book.bookText))
 }
 
 // runs recursively over folder 
@@ -46,6 +47,7 @@ type Book struct {
   author string
   date string // release dates are really wonky.. might not include
   fullText []string
+  bookText []string
 }
 
 func BookBuilder(filename string) Book {
@@ -56,14 +58,15 @@ func BookBuilder(filename string) Book {
   defer file.Close()
 
   scanner := bufio.NewScanner(file)
-  //title := GetTitle(scanner)
-  //author := GetAuthor(scanner)
-  //date := GetDate(scanner)
-  title := ""
-  author := ""
-  date := ""
-  fullText := Strip(GetText(scanner))
-  return Book{filename, title, author, date, fullText}
+  title := GetTitle(scanner)
+  author := GetAuthor(scanner)
+  date := GetDate(scanner)
+  //title := ""
+  //author := ""
+  //date := ""
+  fullText := Strip(GetTextAll(scanner))
+  bookText := GetText(fullText)
+  return Book{filename, title, author, date, fullText, bookText}
 
 }
 
@@ -72,7 +75,8 @@ func BookPrinter(book Book) {
   fmt.Println("Title: \t\t", book.title)
   fmt.Println("Author: \t", book.author)
   fmt.Println("Release Date: \t", book.date)
-  fmt.Println("Full Text: \n", book.fullText)
+  //fmt.Println("Full Text: \n", book.fullText)
+  //fmt.Println("Book Text: \n", book.bookText)
 }
 
 // retrieve book title from file
@@ -149,20 +153,39 @@ func Between(line string, a string, b string) (date string) {
 // this needs to section by newlines or something
 // currently splits line by line which does not work for returning paragraphs later
 // return full text of file
-func GetText(scanner *bufio.Scanner) (text []string) {
-  onNewLine := func(data []byte, atEOF bool) (advance int, token []byte, err error) {
-    if atEOF && len(data) == 0 {
-      return 0, nil, nil
+
+// for i, line := range text
+//   if i == "\n"
+//     beginning = i+1
+//   if i == "\n"
+//     end = i
+//   fullText = text[beginning:end]
+
+func GetText(fulltext []string) (text []string) {
+  var paragraph []string
+  var parastring string
+  start := 0
+  end := 1
+
+  for i, line := range fulltext {
+    switch line {
+    case "":
+      fmt.Println("NEWLINE")
+    default: 
+      fmt.Println(start, end, paragraph, i, line)
     }
-    if i := strings.Index(string(data), "\n"); i >= 0 {
-      return i + 1, data[:i], nil
-    }
-    if !atEOF {
-      return 0, nil, nil
-    }
-    return 0, data, bufio.ErrFinalToken
   }
-  scanner.Split(onNewLine)
+  text = append(text, parastring)
+  return
+}
+
+func TrimNewLine(text []string) string {
+  re := regexp.MustCompile(` +\r?\n +`)
+  newtext := strings.TrimSpace(strings.Join(text[:], " "))
+  return re.ReplaceAllString(newtext, " ")
+}
+
+func GetTextAll(scanner *bufio.Scanner) (text []string) {
   for scanner.Scan() {
     text = append(text, scanner.Text())
   }
@@ -206,11 +229,12 @@ func Strip(text []string) (stripped []string) {
 func GetParagraph(text []string) (paragraph []string) {
   var graph []string
   for i, line := range text {
-    if i < 50 {
+    if i < 1 {
       graph = append(graph, line)
     }
     paragraph = graph[:]
   }
+  fmt.Println(len(paragraph))
   return
 }
 
