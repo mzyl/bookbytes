@@ -5,7 +5,6 @@ import (
   "fmt"
   "log"
   "bufio"
-  "regexp"
   "strings"
 )
 
@@ -15,7 +14,8 @@ func main() {
   book := BookBuilder(filename)
   BookPrinter(book)
   fmt.Println()
-  //fmt.Printf("%v\n", GetParagraph(book.bookText))
+  fmt.Printf("%v\n", GetParagraph(book.bookText))
+  PrintBook(book.bookText)
 }
 
 // runs recursively over folder 
@@ -61,9 +61,6 @@ func BookBuilder(filename string) Book {
   title := GetTitle(scanner)
   author := GetAuthor(scanner)
   date := GetDate(scanner)
-  //title := ""
-  //author := ""
-  //date := ""
   fullText := Strip(GetTextAll(scanner))
   bookText := GetText(fullText)
   return Book{filename, title, author, date, fullText, bookText}
@@ -76,7 +73,7 @@ func BookPrinter(book Book) {
   fmt.Println("Author: \t", book.author)
   fmt.Println("Release Date: \t", book.date)
   //fmt.Println("Full Text: \n", book.fullText)
-  //fmt.Println("Book Text: \n", book.bookText)
+  fmt.Println("Book Text: \n", book.bookText)
 }
 
 // retrieve book title from file
@@ -149,46 +146,27 @@ func Between(line string, a string, b string) (date string) {
   return
 }
 
-// TODO:
-// this needs to section by newlines or something
-// currently splits line by line which does not work for returning paragraphs later
-// return full text of file
-
-// for i, line := range text
-//   if i == "\n"
-//     beginning = i+1
-//   if i == "\n"
-//     end = i
-//   fullText = text[beginning:end]
-
-func GetText(fulltext []string) (text []string) {
-  var paragraph []string
-  var parastring string
-  start := 0
-  end := 1
-
-  for i, line := range fulltext {
-    switch line {
-    case "":
-      fmt.Println("NEWLINE")
-    default: 
-      fmt.Println(start, end, paragraph, i, line)
-    }
-  }
-  text = append(text, parastring)
-  return
-}
-
-func TrimNewLine(text []string) string {
-  re := regexp.MustCompile(` +\r?\n +`)
-  newtext := strings.TrimSpace(strings.Join(text[:], " "))
-  return re.ReplaceAllString(newtext, " ")
-}
-
+// return all text because I couldn't run range over a scanner type
 func GetTextAll(scanner *bufio.Scanner) (text []string) {
   for scanner.Scan() {
     text = append(text, scanner.Text())
   }
+  return
+}
+
+// finds the new lines and returns a splice of paragraphs
+func GetText(fulltext []string) (text []string) {
+  for _, line := range fulltext {
+    switch line {
+    case "":
+      line = "NEWLINE"
+      text = append(text, line)
+    default: 
+      text = append(text, line)
+    }
+  }
+  textstring := strings.TrimSpace(strings.Join(text[:], " "))
+  text = strings.Split(textstring, "NEWLINE")
   return
 }
 
@@ -229,13 +207,21 @@ func Strip(text []string) (stripped []string) {
 func GetParagraph(text []string) (paragraph []string) {
   var graph []string
   for i, line := range text {
-    if i < 1 {
+    if i < 10 {
       graph = append(graph, line)
     }
     paragraph = graph[:]
   }
+  fmt.Println("Book Length: ", len(text))
   fmt.Println(len(paragraph))
   return
+}
+
+// paragraph by paragraph printing of book
+func PrintBook(text []string) {
+  for i, paragraph := range text {
+    fmt.Println(i, paragraph)
+  }
 }
 
 // outputs a line-by-line copy of the text in the book file
