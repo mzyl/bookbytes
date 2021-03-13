@@ -4,8 +4,10 @@ import (
   "os"
   "fmt"
   "log"
+  "time"
   "bufio"
   "strings"
+  "math/rand"
 )
 
 func main() {
@@ -15,7 +17,9 @@ func main() {
   BookPrinter(book)
   fmt.Println()
   fmt.Printf("%v\n", GetParagraph(book.bookText))
-  PrintBook(book.bookText)
+  //var contents map[int]Paragraphs
+  //contents = make(map[int]Paragraphs)
+  //GetParagraph(book.bookText, contents)
 }
 
 // runs recursively over folder 
@@ -50,6 +54,11 @@ type Book struct {
   bookText []string
 }
 
+type Paragraphs struct {
+  index int
+  content string
+}
+
 func BookBuilder(filename string) Book {
   file, err := os.Open(filename)
   if err != nil {
@@ -73,7 +82,7 @@ func BookPrinter(book Book) {
   fmt.Println("Author: \t", book.author)
   fmt.Println("Release Date: \t", book.date)
   //fmt.Println("Full Text: \n", book.fullText)
-  fmt.Println("Book Text: \n", book.bookText)
+  //fmt.Println("Book Text: \n", book.bookText)
 }
 
 // retrieve book title from file
@@ -198,22 +207,23 @@ func Strip(text []string) (stripped []string) {
 }
 
 // TODO:
-// randomly select a index from the array
-// determine if that index contains a "paragraph" i.e. by length or something
 // return the text from that paragraph and its index in the array
 // index is important for finding chapter later
 // probably need a paragraph struct to hold text and location
+// GetParagraph can retrun index section of book -- needs fixed
 
-func GetParagraph(text []string) (paragraph []string) {
-  var graph []string
-  for i, line := range text {
-    if i < 10 {
-      graph = append(graph, line)
+func GetParagraph(text []string) (paragraph string) {
+  rand.Seed(time.Now().UnixNano())
+  var randomparagraph int
+  for range text {
+    randomparagraph = rand.Intn(len(text))
+    if len(text[randomparagraph]) > 400 {
+      paragraph = text[randomparagraph]
+      index := randomparagraph
+      fmt.Println("Paragraph Number ", index)
+      break
     }
-    paragraph = graph[:]
   }
-  fmt.Println("Book Length: ", len(text))
-  fmt.Println(len(paragraph))
   return
 }
 
