@@ -16,10 +16,13 @@ func main() {
   book := BookBuilder(filename)
   BookPrinter(book)
   fmt.Println()
-  fmt.Printf("%v\n", GetParagraph(book.bookText))
-  //var contents map[int]Paragraphs
-  //contents = make(map[int]Paragraphs)
-  //GetParagraph(book.bookText, contents)
+  book.paragraph = GetParagraph(book)
+  fmt.Println("Index: ", book.paragraph)
+  fmt.Println(ParagraphPrinter(book))
+  fmt.Println()
+  book.paragraph = PreviousParagraph(book)
+  fmt.Println("Index: ", book.paragraph)
+  fmt.Println(ParagraphPrinter(book))
 }
 
 // runs recursively over folder 
@@ -52,12 +55,11 @@ type Book struct {
   date string // release dates are really wonky.. might not include
   fullText []string
   bookText []string
+  paragraph int
 }
 
-type Paragraphs struct {
-  index int
-  content string
-}
+/*** BOOKBUILDER FUNCTIONS ***/
+
 
 func BookBuilder(filename string) Book {
   file, err := os.Open(filename)
@@ -70,12 +72,14 @@ func BookBuilder(filename string) Book {
   title := GetTitle(scanner)
   author := GetAuthor(scanner)
   date := GetDate(scanner)
-  fullText := Strip(GetTextAll(scanner))
-  bookText := GetText(fullText)
-  return Book{filename, title, author, date, fullText, bookText}
+  fullText := Strip(GetAllText(scanner))
+  bookText := GetBookText(fullText)
+  paragraph := 0
+  return Book{filename, title, author, date, fullText, bookText, paragraph}
 
 }
 
+// prints all contents of Book structure
 func BookPrinter(book Book) {
   fmt.Println("Filename: ", book.filename)
   fmt.Println("Title: \t\t", book.title)
@@ -83,6 +87,10 @@ func BookPrinter(book Book) {
   fmt.Println("Release Date: \t", book.date)
   //fmt.Println("Full Text: \n", book.fullText)
   //fmt.Println("Book Text: \n", book.bookText)
+}
+
+func ParagraphPrinter(book Book) string {
+  return book.bookText[book.paragraph]
 }
 
 // retrieve book title from file
@@ -134,29 +142,8 @@ func GetDate(scanner *bufio.Scanner) (date string) {
   return 
 }
 
-// helps retrieve release date, which is between a colon and a book number encased in brackets
-// since the dates are weird, this will probably be removed later
-func Between(line string, a string, b string) (date string) {
-  first := strings.Index(line, a)
-  if first == -1 {
-    return ""
-  }
-
-  last := strings.Index(line, b)
-  if last == -1 {
-    return ""
-  }
-
-  firstAdjusted := first + len(a)
-  if firstAdjusted >= last {
-    return ""
-  }
-  date = line[firstAdjusted:last]
-  return
-}
-
 // return all text because I couldn't run range over a scanner type
-func GetTextAll(scanner *bufio.Scanner) (text []string) {
+func GetAllText(scanner *bufio.Scanner) (text []string) {
   for scanner.Scan() {
     text = append(text, scanner.Text())
   }
@@ -164,7 +151,7 @@ func GetTextAll(scanner *bufio.Scanner) (text []string) {
 }
 
 // finds the new lines and returns a splice of paragraphs
-func GetText(fulltext []string) (text []string) {
+func GetBookText(fulltext []string) (text []string) {
   for _, line := range fulltext {
     switch line {
     case "":
@@ -209,21 +196,57 @@ func Strip(text []string) (stripped []string) {
 // TODO:
 // return the text from that paragraph and its index in the array
 // index is important for finding chapter later
-// probably need a paragraph struct to hold text and location
-// GetParagraph can retrun index section of book -- needs fixed
+// navigating up and down can result in blank paragraphs since not all empty strings are being removed
 
-func GetParagraph(text []string) (paragraph string) {
+/*** PARAGRAPH/NAVIGATION FUNCTIONS ***/
+
+
+func GetParagraph(book Book) (index int) {
+  text := book.bookText
   rand.Seed(time.Now().UnixNano())
   var randomparagraph int
   for range text {
     randomparagraph = rand.Intn(len(text))
     if len(text[randomparagraph]) > 400 {
-      paragraph = text[randomparagraph]
-      index := randomparagraph
-      fmt.Println("Paragraph Number ", index)
+      index = randomparagraph
       break
     }
   }
+  return
+}
+
+// is there ever a reason be go forward, then to the paragraph above the original?
+
+func PreviousParagraph(book Book) int {
+  return book.paragraph - 1
+}
+
+func NextParagraph(book Book) int {
+  return book.paragraph + 1
+}
+
+
+/*** HELPER FUNCTIONS ***/
+
+
+// helps retrieve release date, which is between a colon and a book number encased in brackets
+// since the dates are weird, this will probably be removed later
+func Between(line string, a string, b string) (date string) {
+  first := strings.Index(line, a)
+  if first == -1 {
+    return ""
+  }
+
+  last := strings.Index(line, b)
+  if last == -1 {
+    return ""
+  }
+
+  firstAdjusted := first + len(a)
+  if firstAdjusted >= last {
+    return ""
+  }
+  date = line[firstAdjusted:last]
   return
 }
 

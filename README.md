@@ -7,9 +7,7 @@
     - Main
     - Is there a reason to split up the rest? 
     - Maybe the rest goes in a single file sectioned off properly
-      - BookBuilding functions
-      - Paragraph/Navigation functions
-      - Helper functions
-- Figure out how to move through document starting from original paragraph
-  - Maybe try writing function ouput to figure out what input is needed
-
+      - Sections have been made in main file for now
+- Can move to next and previous paragraphs now
+  - Finding chapter and beginning of book are next, I think
+    - I don't have a good idea of how to do this across multiple books yet
