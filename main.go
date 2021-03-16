@@ -12,7 +12,7 @@ import (
 
 func main() {
   //batching()
-  filename := "./books/11-0.txt"
+  filename := "./books/36-0.txt"
   book := BookBuilder(filename)
   BookPrinter(book)
   fmt.Println()
@@ -20,7 +20,7 @@ func main() {
   fmt.Println("Index: ", book.paragraph)
   fmt.Println(ParagraphPrinter(book))
   fmt.Println()
-  book.paragraph = PreviousParagraph(book)
+  book.paragraph = NextParagraph(book)
   fmt.Println("Index: ", book.paragraph)
   fmt.Println(ParagraphPrinter(book))
 }
@@ -72,11 +72,10 @@ func BookBuilder(filename string) Book {
   title := GetTitle(scanner)
   author := GetAuthor(scanner)
   date := GetDate(scanner)
-  fullText := Strip(GetAllText(scanner))
+  fullText := StripLicense(GetAllText(scanner))
   bookText := GetBookText(fullText)
   paragraph := 0
   return Book{filename, title, author, date, fullText, bookText, paragraph}
-
 }
 
 // prints all contents of Book structure
@@ -167,7 +166,7 @@ func GetBookText(fulltext []string) (text []string) {
 }
 
 // strip licensing info, index, etc. from file
-func Strip(text []string) (stripped []string) {
+func StripLicense(text []string) (stripped []string) {
   start := 0
   end := 0
 
@@ -194,8 +193,6 @@ func Strip(text []string) (stripped []string) {
 }
 
 // TODO:
-// return the text from that paragraph and its index in the array
-// index is important for finding chapter later
 // navigating up and down can result in blank paragraphs since not all empty strings are being removed
 
 /*** PARAGRAPH/NAVIGATION FUNCTIONS ***/
@@ -224,6 +221,19 @@ func PreviousParagraph(book Book) int {
 func NextParagraph(book Book) int {
   return book.paragraph + 1
 }
+
+func BeginningChapter(book Book) int {
+  // find index of paragraph at the beginning of the current chapter
+  return 0
+}
+
+func BeginningBook(book Book) int {
+  // find index of paragraph at the beginning of the book
+  // should this just return full book?
+  return 0
+}
+
+// any reason to return the entire book for the user to scroll through?
 
 
 /*** HELPER FUNCTIONS ***/
