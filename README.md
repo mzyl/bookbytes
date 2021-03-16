@@ -14,3 +14,6 @@
     - I don't have a good idea of how to do this across multiple books yet
     - Finding chapter and beginning of book should provide full text scrolling
       - Full text from current location should also be an option
+
+- If you want a new paragraph, should it come from a new book right away? 
+  - Maybe you just want to try a different paragraph instead..
