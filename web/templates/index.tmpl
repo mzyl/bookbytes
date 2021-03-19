@@ -1,0 +1,31 @@
+<html>
+  <title>bookbytes</title>
+  <h1>Selected Paragraph</h1>
+  <b> {{.contents}} </b>
+  <br>
+<!--
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+  <script type="text/javascript">
+    $(document).ready(function() {
+      $("#callGo").on('click', function() {
+        $.ajax({
+          url: "http://localhost:8080/book",
+          method: "GET",
+          success: function(data) {
+            $("#response").html(data);
+          },
+        });
+      });
+    });
+  </script>
+  <button id="callGo" type="submit">Call Go Code</button>
+  <div id="response"></div>
+  -->
+  <p id="demo">click here</p>
+
+  <script>
+    let demo = document.getElementById('demo');
+    document.onclick = "{{.newcontent}}"
+
+  </script>
+</html>

@@ -1,0 +1,19 @@
+package web
+
+import (
+  "net/http"
+  "github.com/gin-gonic/gin"
+)
+
+var db = make(map[string]string)
+
+func SetupRouter() *gin.Engine {
+  r:= gin.Default()
+
+  r.GET("/ping", func(c *gin.Context) {
+    c.String(http.StatusOK, ParagraphPrinter(book))
+  })
+
+  return r
+}
+
